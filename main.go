@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -23,8 +24,19 @@ func main() {
 		exit("Error reading records")
 	}
 
-	fmt.Println(createProblems(records))
+	problems := createProblems(records)
 
+	numCorrect := 0
+
+	for _, v := range problems {
+		fmt.Println(v.Question)
+		userAnswer := getUserInput()
+		if userAnswer == v.Answer {
+			numCorrect++
+		}
+	}
+
+	fmt.Printf("You've scored %d out of %d", numCorrect, len(problems))
 }
 
 type Problem struct {
@@ -56,9 +68,9 @@ func createProblems(records [][]string) []Problem {
 
 func getUserInput() string {
 	inputReader := bufio.NewReader(os.Stdin)
-	answer, err := inputReader.ReadString('\n')
+	userInput, err := inputReader.ReadString('\n')
 	if err != nil {
 		exit("Error reading input")
 	}
-	return answer
+	return strings.Trim(userInput, "\r\n")
 }
