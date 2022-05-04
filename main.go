@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/csv"
 	"flag"
 	"fmt"
@@ -15,14 +16,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	reader := csv.NewReader(file)
+	csvReader := csv.NewReader(file)
 
-	records, err := reader.ReadAll()
+	records, err := csvReader.ReadAll()
 	if err != nil {
 		os.Exit(1)
 	}
 
 	fmt.Println(createProblems(records))
+
 }
 
 type Problem struct {
@@ -45,4 +47,13 @@ func createProblems(records [][]string) []Problem {
 		}
 	}
 	return problems
+}
+
+func getUserInput() string {
+	inputReader := bufio.NewReader(os.Stdin)
+	answer, err := inputReader.ReadString('\n')
+	if err != nil {
+		os.Exit(1)
+	}
+	return answer
 }
