@@ -13,14 +13,14 @@ func main() {
 
 	file, err := os.Open(csvFilename)
 	if err != nil {
-		os.Exit(1)
+		exit(fmt.Sprintf("Error opening file: %s", csvFilename))
 	}
 
 	csvReader := csv.NewReader(file)
 
 	records, err := csvReader.ReadAll()
 	if err != nil {
-		os.Exit(1)
+		exit("Error reading records")
 	}
 
 	fmt.Println(createProblems(records))
@@ -30,6 +30,11 @@ func main() {
 type Problem struct {
 	Question string
 	Answer   string
+}
+
+func exit(msg string) {
+	fmt.Println(msg)
+	os.Exit(1)
 }
 
 func getFilename() string {
@@ -53,7 +58,7 @@ func getUserInput() string {
 	inputReader := bufio.NewReader(os.Stdin)
 	answer, err := inputReader.ReadString('\n')
 	if err != nil {
-		os.Exit(1)
+		exit("Error reading input")
 	}
 	return answer
 }
