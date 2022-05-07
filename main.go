@@ -7,14 +7,18 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 )
 
 func main() {
-	csvFilename := getFilename()
+	csvFilename := flag.String("csv", "problems.csv", "CSV file containing the questions and answers")
+	timeLimit := flag.Int("time", 20, "Time limit in seconds")
 
-	file, err := os.Open(csvFilename)
+	flag.Parse()
+
+	file, err := os.Open(*csvFilename)
 	if err != nil {
-		exit(fmt.Sprintf("Error opening file: %s", csvFilename))
+		exit(fmt.Sprintf("Error opening file: %s", *csvFilename))
 	}
 
 	csvReader := csv.NewReader(file)
@@ -25,14 +29,22 @@ func main() {
 	}
 
 	problems := createProblems(records)
-
 	numCorrect := 0
+	timer := time.NewTimer(time.Duration(*timeLimit) * time.Second)
 
+questionLoop:
 	for _, v := range problems {
 		fmt.Println(v.Question)
-		userAnswer := getUserInput()
-		if userAnswer == v.Answer {
-			numCorrect++
+		inputChan := make(chan string)
+		go getUserInput(inputChan)
+
+		select {
+		case <-timer.C:
+			break questionLoop
+		case userAnswer := <-inputChan:
+			if userAnswer == v.Answer {
+				numCorrect++
+			}
 		}
 	}
 
@@ -49,12 +61,6 @@ func exit(msg string) {
 	os.Exit(1)
 }
 
-func getFilename() string {
-	csvFilename := flag.String("csv", "problems.csv", "CSV file containing the questions and answers")
-	flag.Parse()
-	return *csvFilename
-}
-
 func createProblems(records [][]string) []Problem {
 	problems := make([]Problem, len(records))
 	for i, row := range records {
@@ -66,11 +72,11 @@ func createProblems(records [][]string) []Problem {
 	return problems
 }
 
-func getUserInput() string {
+func getUserInput(inputChan chan string) {
 	inputReader := bufio.NewReader(os.Stdin)
 	userInput, err := inputReader.ReadString('\n')
 	if err != nil {
 		exit("Error reading input")
 	}
-	return strings.Trim(userInput, "\r\n")
+	inputChan <- strings.Trim(userInput, "\r\n")
 }
