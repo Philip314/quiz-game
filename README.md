@@ -8,7 +8,7 @@
 
 ## Getting Started
 
-1. Pull repo
+1. Clone repo
 2. Go into the project folder with command line interface
 3. Run project with `go run main.go`
 
